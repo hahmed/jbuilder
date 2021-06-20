@@ -60,23 +60,23 @@ jobs:
           - ruby: head
             gemfile: "gemfiles/rails_head.gemfile"
             allow-failure: true
-      steps:
-        - uses: actions/checkout@v2
-        - uses: actions/cache@v2
-          with:
-            path: /home/runner/bundle
-            key: bundle-use-ruby-${{ matrix.ruby }}-${{ matrix.gemfile }}-gems-${{ hashFiles(matrix.gemfile) }}-${{ hashFiles('**/*.gemspec') }}
-            restore-keys: |
-              bundle-use-ruby-${{ matrix.ruby }}-${{ matrix.gemfile }}-gems-
-        - name: Set up Ruby
-          uses: ruby/setup-ruby@v1
-          with:
-            ruby-version: ${{ matrix.ruby }}
-        - name: Bundle install
-          run: |
-            gem install bundler -v '<2'
-            bundle config path /home/runner/bundle
-            bundle config --global gemfile ${{ matrix.gemfile }}
-            bundle install --jobs 4 --retry 3
-        - name: Run tests
-          run: bundle exec rake
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: /home/runner/bundle
+          key: bundle-use-ruby-${{ matrix.ruby }}-${{ matrix.gemfile }}-gems-${{ hashFiles(matrix.gemfile) }}-${{ hashFiles('**/*.gemspec') }}
+          restore-keys: |
+            bundle-use-ruby-${{ matrix.ruby }}-${{ matrix.gemfile }}-gems-
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+      - name: Bundle install
+        run: |
+          gem install bundler -v '<2'
+          bundle config path /home/runner/bundle
+          bundle config --global gemfile ${{ matrix.gemfile }}
+          bundle install --jobs 4 --retry 3
+      - name: Run tests
+        run: bundle exec rake
