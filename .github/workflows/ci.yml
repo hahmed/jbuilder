@@ -1,0 +1,82 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - ruby: 2.2
+            gemfile: "gemfiles/rails_5_0.gemfile"
+          - ruby: 2.2
+            gemfile: "gemfiles/rails_5_1.gemfile"
+          - ruby: 2.3
+            gemfile: "gemfiles/rails_5_0.gemfile"
+          - ruby: 2.3
+            gemfile: "gemfiles/rails_5_1.gemfile"
+          - ruby: 2.3
+            gemfile: "gemfiles/rails_5_3.gemfile"
+          - ruby: 2.4
+            gemfile: "gemfiles/rails_5_0.gemfile"
+          - ruby: 2.4
+            gemfile: "gemfiles/rails_5_1.gemfile"
+          - ruby: 2.4
+            gemfile: "gemfiles/rails_5_2.gemfile"
+          - ruby: 2.5
+            gemfile: "gemfiles/rails_5_0.gemfile"
+          - ruby: 2.5
+            gemfile: "gemfiles/rails_5_1.gemfile"
+          - ruby: 2.5
+            gemfile: "gemfiles/rails_5_2.gemfile"
+          - ruby: 2.5
+            gemfile: "gemfiles/rails_6_0.gemfile"
+          - ruby: 2.5
+            gemfile: "gemfiles/rails_6_1.gemfile"
+          - ruby: 2.6
+            gemfile: "gemfiles/rails_5_0.gemfile"
+          - ruby: 2.6
+            gemfile: "gemfiles/rails_5_1.gemfile"
+          - ruby: 2.6
+            gemfile: "gemfiles/rails_5_2.gemfile"
+          - ruby: 2.6
+            gemfile: "gemfiles/rails_6_0.gemfile"
+          - ruby: 2.6
+            gemfile: "gemfiles/rails_6_1.gemfile"
+          - ruby: 2.7
+            gemfile: "gemfiles/rails_6_0.gemfile"
+          - ruby: 2.7
+            gemfile: "gemfiles/rails_6_1.gemfile"
+          - ruby: 2.7
+            gemfile: "gemfiles/rails_head.gemfile"
+          - ruby: 3.0
+            gemfile: "gemfiles/rails_6_1.gemfile"
+          - ruby: 3.0
+            gemfile: "gemfiles/rails_head.gemfile"
+            allow-failure: true
+          - ruby: head
+            gemfile: "gemfiles/rails_head.gemfile"
+            allow-failure: true
+          - ruby: head
+            gemfile: "gemfiles/rails_head.gemfile"
+            allow-failure: true
+     steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: /home/runner/bundle
+          key: bundle-use-ruby-${{ matrix.ruby }}-${{ matrix.gemfile }}-gems-${{ hashFiles(matrix.gemfile) }}-${{ hashFiles('**/*.gemspec') }}
+          restore-keys: |
+            bundle-use-ruby-${{ matrix.ruby }}-${{ matrix.gemfile }}-gems-
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+      - name: Bundle install
+        run: |
+          gem install bundler -v '<2'
+          bundle config path /home/runner/bundle
+          bundle config --global gemfile ${{ matrix.gemfile }}
+          bundle install --jobs 4 --retry 3
+      - name: Run tests
+        run: bundle exec rake
